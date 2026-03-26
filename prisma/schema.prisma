@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String?  @map("full_name")
+  role         String   @default("recruiter")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  candidates   Candidate[]
+  actionLogs   ActionLog[]
+  aiComments   AiComment[]
+
+  @@map("users")
+}
+
+model Vacancy {
+  id          Int      @id @default(autoincrement())
+  title       String
+  recruiterId Int?     @map("recruiter_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  candidateVacancies CandidateVacancy[]
+  letterLogs         LetterLog[]
+
+  @@map("vacancies")
+}
+
+model Candidate {
+  id          Int      @id @default(autoincrement())
+  hhUrl       String?  @map("hh_url")
+  name        String
+  position    String?
+  salary      String?
+  city        String?
+  experience  String?
+  phone       String?
+  email       String?
+  resumeText  String?  @map("resume_text")
+  dateAdded   DateTime @default(now()) @map("date_added")
+  recruiterId Int?     @map("recruiter_id")
+
+  recruiter          User?              @relation(fields: [recruiterId], references: [id])
+  candidateVacancies CandidateVacancy[]
+  letterLogs         LetterLog[]
+  aiComments         AiComment[]
+
+  @@map("candidates")
+}
+
+model CandidateVacancy {
+  id          Int      @id @default(autoincrement())
+  candidateId Int      @map("candidate_id")
+  vacancyId   Int      @map("vacancy_id")
+  status      String   @default("new")
+  rating      Int?
+  letterSent  Boolean  @default(false) @map("letter_sent")
+  dateAdded   DateTime @default(now()) @map("date_added")
+  changedBy   Int?     @map("changed_by")
+  notes       String?
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancy   Vacancy   @relation(fields: [vacancyId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, vacancyId])
+  @@map("candidate_vacancies")
+}
+
+model ActionLog {
+  id          Int      @id @default(autoincrement())
+  action      String
+  candidateId Int?     @map("candidate_id")
+  position    String?
+  name        String?
+  timestamp   DateTime @default(now())
+  userId      Int?     @map("user_id")
+  details     String?
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("action_log")
+}
+
+model HhToken {
+  id           Int      @id @default(autoincrement())
+  accessToken  String   @map("access_token")
+  refreshToken String?  @map("refresh_token")
+  expiresAt    String?  @map("expires_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("hh_tokens")
+}
+
+model LetterLog {
+  id          Int      @id @default(autoincrement())
+  candidateId Int      @map("candidate_id")
+  vacancyId   Int?     @map("vacancy_id")
+  letterText  String?  @map("letter_text")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  vacancy   Vacancy?  @relation(fields: [vacancyId], references: [id])
+
+  @@map("letter_log")
+}
+
+model VacancyProfile {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  keywords    String?
+  experience  String?
+  city        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("vacancy_profiles")
+}
+
+model AiComment {
+  id          Int      @id @default(autoincrement())
+  candidateId Int      @map("candidate_id")
+  vacancyId   Int?     @map("vacancy_id")
+  comment     String?
+  rating      Int?
+  recruiterId Int?     @map("recruiter_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  recruiter User?     @relation(fields: [recruiterId], references: [id])
+
+  @@map("ai_comments")
+}
