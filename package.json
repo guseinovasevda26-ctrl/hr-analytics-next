@@ -32,6 +32,9 @@
     "bcryptjs": "^2.4.3",
     "sonner": "^1.7.4"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "typescript": "^5.7.3",
     "@types/node": "^22.10.7",
