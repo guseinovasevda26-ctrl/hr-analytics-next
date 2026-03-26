@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { getHhHeaders, HH_API_BASE } from '@/lib/hh'
-
-// In-memory task store (resets on redeploy — acceptable for short-lived tasks)
-export const scrapeTasks: Record<string, {
-  status: 'running' | 'done' | 'error'
-  result: unknown[] | null
-  error: string | null
-  progress?: number
-  total?: number
-  label?: string
-}> = {}
+import { scrapeTasks } from '@/lib/scrape-tasks'
 
 export async function POST(req: NextRequest) {
   const session = await auth()

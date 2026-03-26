@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { scrapeTasks } from '../route'
+import { scrapeTasks } from '@/lib/scrape-tasks'
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ taskId: string }> }) {
   const session = await auth()
