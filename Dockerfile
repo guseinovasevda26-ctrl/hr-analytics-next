@@ -1,4 +1,4 @@
-FROM node:20.19-alpine AS builder
+FROM node:20.19-alpine
 
 WORKDIR /app
 
@@ -9,15 +9,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 RUN npm run build
 
-FROM node:20.19-alpine AS runner
-
-WORKDIR /app
-
 ENV NODE_ENV=production
-
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD sh -c "npx prisma db push --skip-generate && node lib/seed.mjs 2>/dev/null; node .next/standalone/server.js"
